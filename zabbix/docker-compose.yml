@@ -23,6 +23,7 @@ services:
     volumes:
       - "./zabbix/alertscripts:/usr/lib/zabbix/alertscripts"
     environment:
+      ZBX_ENABLE_SNMP_TRAPS: true
       DB_SERVER_HOST: mysql
       MYSQL_DATABASE: ${MYSQL_DATABASE}
       MYSQL_USER: ${MYSQL_USER}
@@ -35,6 +36,7 @@ services:
     image: ${ZABBIX_WEB}
     links:
       - mysql
+      - zabbix-server
     restart: always
     ports:
       - "80:8080"
@@ -45,21 +47,10 @@ services:
       MYSQL_USER: ${MYSQL_USER}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
       PHP_TZ: ${PHP_TIMEZONE}
-    depends_on:
-      - mysql
-      - zabbix-server
+      ZBX_HOSTNAME: "zabbix-server"
+      ZBX_SERVER_HOST: zabbix-server
+      ZBX_SERVER_PORT: "10051"
 
-  grafana:
-    container_name: grafana
-    image: grafana/grafana
-    links:
-      - mysql
-      - zabbix-server
-    restart: always
-    ports:
-      - 3000:3000
-    environment:
-      - GF_INSTALL_PLUGINS=alexanderzobnin-zabbix-app
     depends_on:
       - mysql
       - zabbix-server
@@ -67,20 +58,22 @@ services:
   zabbix-agent:
     container_name: zabbix-agent
     image: ${ZABBIX_AGENT}
-    user: root
+    init: true
+    privileged: true
+    restart: unless-stopped
     links:
       - zabbix-server
     depends_on:
       - zabbix-server
-    restart: always
-    privileged: true
     ports:
       - 10050:10050
     volumes:
       - /var/run:/var/run
     environment:
-      - ZBX_HOSTNAME=Zabbix server
-      - ZBX_SERVER_HOST=172.18.0.1
+      ZBX_HOSTNAME: "zabbix-server"
+      ZBX_SERVER_HOST: zabbix-server
+      ZBX_SERVER_PORT: "10051"
+      ZBX_SERVER_ACTIVE: zabbix-server
 
   phpmyadmin:
     container_name: phpmyadmin
@@ -98,3 +91,42 @@ services:
       PMA_USER: root
       PMA_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+
+  zabbix-snmp:
+    container_name: zabbix-snmp
+    image: ${ZABBIX_SNMP}
+    links:
+      - zabbix-server
+    depends_on:
+      - zabbix-server
+    ports:
+      - 162:162/udp
+    volumes:
+      - ./zabbix/snmptraps:/var/lib/zabbix/snmptraps:rw
+    user: root
+
+  zabbix-proxy:
+    container_name: zabbix-proxy
+    image: ${ZABBIX_PROXY}
+    links:
+      - zabbix-server
+    depends_on:
+      - zabbix-server
+    environment:
+      ZBX_HOSTNAME: zabbix-server
+      ZBX_SERVER_HOST: zabbix-server
+
+  grafana:
+    container_name: grafana
+    image: grafana/grafana
+    links:
+      - mysql
+      - zabbix-server
+    restart: always
+    ports:
+      - 3000:3000
+    environment:
+      - GF_INSTALL_PLUGINS=alexanderzobnin-zabbix-app
+    depends_on:
+      - mysql
+      - zabbix-server
