@@ -4,4 +4,4 @@ services:
     build: .
     tty: true
     privileged: true
-    network_mode: "host"  
+    network_mode: "host"
