@@ -1,0 +1,31 @@
+services:
+  ollama-service:
+    hostname: ollamah
+    container_name: ollama-service
+    image: ollama/ollama
+    ports:
+      - 11434:11434
+    volumes:
+      - ollama-models-db:/root/.ollama
+    networks:
+      - chat-ui
+
+  chat-ui:
+    image: ghcr.io/open-webui/open-webui:main
+    volumes:
+      - chat-ui-db:/app/backend/data
+    environment:
+      OLLAMA_BASE_URL: http://ollamah:11434
+    ports:
+      - 3000:8080
+    networks:
+      - chat-ui
+
+networks:
+  chat-ui:
+    driver: bridge
+
+volumes:
+  chat-ui-db:
+  ollama-models-db:
+
