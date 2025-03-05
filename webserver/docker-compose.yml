@@ -6,7 +6,7 @@ services:
     volumes:
       - ./web:/var/www/html/
     ports:
-      - 80:80
+      - 127.0.0.1:80:80
     depends_on:
       - mysql
     links:
@@ -22,7 +22,7 @@ services:
       MYSQL_USER: ${MYSQL_USERNAME}
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     ports:
-      - 3306:3306
+      - 127.0.0.1:3306:3306
     volumes:
       - ./database:/var/lib/mysql
 
@@ -31,7 +31,7 @@ services:
     image: phpmyadmin
     restart: always
     ports:
-      - 8080:80
+      - 127.0.0.1:8080:80
     links:
       - mysql
     depends_on:
