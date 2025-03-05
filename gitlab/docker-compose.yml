@@ -1,0 +1,20 @@
+services:
+  gitlab-server:
+    image: 'gitlab/gitlab-ce:latest'
+    container_name: gitlab-server
+    ports:
+      - '$PORT:$PORT'
+    environment:
+      GITLAB_ROOT_EMAIL: ${EMAIL}
+      GITLAB_ROOT_PASSWORD: ${PASSWORD}
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url 'http://localhost:${PORT}'
+        nginx['listen_port'] = ${PORT} 
+    volumes:
+      - gitlab_config:/etc/gitlab
+      - gitlab_data:/var/opt/gitlab
+
+
+volumes:
+  gitlab_data:
+  gitlab_config:
