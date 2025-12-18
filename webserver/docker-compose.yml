@@ -24,7 +24,7 @@ services:
     ports:
       - 127.0.0.1:3306:3306
     volumes:
-      - ./database:/var/lib/mysql
+      - mysql_database:/var/lib/mysql
 
   phpmyadmin:
     container_name: phpmyadmin
@@ -42,3 +42,6 @@ services:
       PMA_USER: root
       PMA_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+
+volumes:
+  mysql_database:
