@@ -1,0 +1,28 @@
+services:
+  wordpress:
+    image: wordpress
+    restart: always
+    ports:
+      - 80:80
+    environment:
+      WORDPRESS_DB_HOST: db
+      WORDPRESS_DB_NAME: wordpress
+      WORDPRESS_DB_USER: admin
+      WORDPRESS_DB_PASSWORD: admin123
+    volumes:
+      - wordpress_web:/var/www/html
+
+  db:
+    image: mysql:8.0
+    restart: always
+    environment:
+      MYSQL_DATABASE: wordpress
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: admin123
+      MYSQL_RANDOM_ROOT_PASSWORD: admin123
+    volumes:
+      - wordpress_db:/var/lib/mysql
+
+volumes:
+  wordpress_web:
+  wordpress_db:
